@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import OSLogo from '@/components/OSLogo'
+import type { Database } from '@/lib/supabase/database.types'
 
 type RegistrationType = 'restaurant' | 'waiter'
 
@@ -121,8 +122,9 @@ export default function RegisterPage() {
         return
       }
 
-      // TypeScript tip kontrolü - restaurant'ın tipini açıkça belirtiyoruz
-      const restaurantId: string = (restaurant as { id: string }).id
+      // TypeScript tip kontrolü - Database type'ını kullanarak tip güvenliği sağlıyoruz
+      type RestaurantRow = Database['public']['Tables']['restaurants']['Row']
+      const restaurantId = (restaurant as Pick<RestaurantRow, 'id'>).id
 
       // Create waiter user via API
       const response = await fetch('/api/register', {
