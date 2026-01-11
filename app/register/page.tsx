@@ -122,10 +122,8 @@ export default function RegisterPage() {
         return
       }
 
-      // TypeScript tip kontrolü - restaurantData'nın id özelliğini güvenli şekilde alıyoruz
-      const restaurantId: string = typeof restaurantData === 'object' && restaurantData !== null && 'id' in restaurantData 
-        ? String(restaurantData.id) 
-        : ''
+      // TypeScript tip kontrolü - restaurantData'yı güvenli şekilde tip assertion ile id'ye erişiyoruz
+      const restaurantId = (restaurantData as { id: string } | null)?.id
 
       if (!restaurantId) {
         setError('Geçersiz restoran kodu')
