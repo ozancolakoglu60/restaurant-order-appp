@@ -110,21 +110,28 @@ export default function RegisterPage() {
       }
 
       // Check if restaurant exists
-      const { data: restaurant, error: restaurantError } = await supabase
+      const { data: restaurantData, error: restaurantError } = await supabase
         .from('restaurants')
         .select('id')
         .eq('code', waiterRestaurantCode.toUpperCase().trim())
         .single()
 
-      if (restaurantError || !restaurant) {
+      if (restaurantError || !restaurantData) {
         setError('Geçersiz restoran kodu')
         setLoading(false)
         return
       }
 
-      // TypeScript tip kontrolü - Database type'ını kullanarak tip güvenliği sağlıyoruz
-      type RestaurantRow = Database['public']['Tables']['restaurants']['Row']
-      const restaurantId = (restaurant as Pick<RestaurantRow, 'id'>).id
+      // TypeScript tip kontrolü - restaurantData'nın id özelliğini güvenli şekilde alıyoruz
+      const restaurantId: string = typeof restaurantData === 'object' && restaurantData !== null && 'id' in restaurantData 
+        ? String(restaurantData.id) 
+        : ''
+
+      if (!restaurantId) {
+        setError('Geçersiz restoran kodu')
+        setLoading(false)
+        return
+      }
 
       // Create waiter user via API
       const response = await fetch('/api/register', {
