@@ -121,8 +121,8 @@ export default function RegisterPage() {
         return
       }
 
-      // TypeScript tip kontrolü için restaurantId'yi ayrı değişkene alıyoruz
-      const restaurantId = restaurant.id
+      // TypeScript tip kontrolü - restaurant'ın tipini açıkça belirtiyoruz
+      const restaurantId: string = (restaurant as { id: string }).id
 
       // Create waiter user via API
       const response = await fetch('/api/register', {
