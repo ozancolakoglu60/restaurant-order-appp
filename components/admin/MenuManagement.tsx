@@ -3,9 +3,12 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/supabase/database.types'
+import { createBrowserClient } from '@supabase/ssr'
 import { Plus, Edit, Trash2, X, Check } from 'lucide-react'
 
 type Product = Database['public']['Tables']['products']['Row']
+type ProductUpdate = Database['public']['Tables']['products']['Update']
+type SupabaseClient = ReturnType<typeof createBrowserClient<Database>>
 
 type Profile = {
   id: string
@@ -123,8 +126,7 @@ export default function MenuManagement() {
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!editingProduct) return
-    if (!supabase) return
+    if (!editingProduct || !supabase) return
 
     const form = e.currentTarget
     if (!form || !(form instanceof HTMLFormElement)) {
@@ -138,13 +140,16 @@ export default function MenuManagement() {
     const price = parseFloat(formData.get('price') as string)
     const isActive = formData.get('is_active') === 'on'
 
-    const { error } = await supabase
+    const updateData: ProductUpdate = {
+      name,
+      price,
+      is_active: isActive,
+    }
+
+    const client = supabase as SupabaseClient
+    const { error } = await client
       .from('products')
-      .update({
-        name,
-        price,
-        is_active: isActive,
-      })
+      .update(updateData)
       .eq('id', editingProduct.id)
 
     if (error) {
@@ -170,9 +175,13 @@ export default function MenuManagement() {
 
   const toggleActive = async (product: Product) => {
     if (!supabase) return
-    const { error } = await supabase
+    const updateData: ProductUpdate = {
+      is_active: !product.is_active,
+    }
+    const client = supabase as SupabaseClient
+    const { error } = await client
       .from('products')
-      .update({ is_active: !product.is_active })
+      .update(updateData)
       .eq('id', product.id)
 
     if (error) {
