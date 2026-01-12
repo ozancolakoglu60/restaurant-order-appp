@@ -7,6 +7,12 @@ import { Plus, Edit, Trash2, X, Check } from 'lucide-react'
 
 type Product = Database['public']['Tables']['products']['Row']
 
+type Profile = {
+  id: string
+  user_id: string
+  restaurant_id: string | null
+}
+
 export default function MenuManagement() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,7 +46,7 @@ export default function MenuManagement() {
       .from('users')
       .select('restaurant_id')
       .eq('id', user.id)
-      .single()
+      .single<Pick<Profile, 'restaurant_id'>>()
 
     if (!userProfile?.restaurant_id) {
       setLoading(false)
@@ -61,6 +67,8 @@ export default function MenuManagement() {
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    if (!supabase) return
     
     const form = e.currentTarget
     if (!form || !(form instanceof HTMLFormElement)) {
@@ -88,7 +96,7 @@ export default function MenuManagement() {
       .from('users')
       .select('restaurant_id')
       .eq('id', user.id)
-      .single()
+      .single<Pick<Profile, 'restaurant_id'>>()
 
     if (!userProfile?.restaurant_id) {
       alert('Restoran bilgisi bulunamadı. Lütfen giriş yaptığınızdan emin olun.')
@@ -116,6 +124,7 @@ export default function MenuManagement() {
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!editingProduct) return
+    if (!supabase) return
 
     const form = e.currentTarget
     if (!form || !(form instanceof HTMLFormElement)) {
@@ -148,6 +157,7 @@ export default function MenuManagement() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return
+    if (!supabase) return
 
     const { error } = await supabase.from('products').delete().eq('id', id)
 
@@ -159,6 +169,7 @@ export default function MenuManagement() {
   }
 
   const toggleActive = async (product: Product) => {
+    if (!supabase) return
     const { error } = await supabase
       .from('products')
       .update({ is_active: !product.is_active })
